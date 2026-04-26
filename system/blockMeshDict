@@ -57,7 +57,7 @@ vertices
 
 blocks
 (
-    Bottom layer (with partitions)
+    //Bottom layer (with partitions)
     hex (0 1 4 3 9 10 13 12) (20 20 15) simpleGrading (1 1 1)
     hex (1 2 5 4 10 11 14 13) (20 20 15) simpleGrading (1 1 1)
     hex (3 4 7 6 12 13 16 15) (20 20 15) simpleGrading (1 1 1)
