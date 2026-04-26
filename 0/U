@@ -1,0 +1,45 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0.1 0.2 0.1);
+
+boundaryField
+{
+    floor
+    {
+        type            noSlip;
+    }
+
+    ceiling
+    {
+        type            noSlip;
+    }
+
+    walls
+    {
+        type            noSlip;
+    }
+
+    partition
+    {
+        type            noSlip;
+    }
+
+    fan_inlet
+    {
+        type            fixedValue;
+        value           uniform (2 1 0);   // 2 m/s airflow in +x direction
+    }
+
+    fan_outlet
+    {
+        type            zeroGradient;
+    }
+}

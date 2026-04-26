@@ -1,0 +1,38 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      nut;
+}
+
+dimensions      [0 2 -1 0 0 0 0];
+
+internalField   uniform 0.0001;
+
+boundaryField
+{
+    floor
+    {
+        type            nutkWallFunction;
+        value           uniform 0.0001;
+    }
+
+    ceiling
+    {
+        type            nutkWallFunction;
+        value           uniform 0.0001;
+    }
+
+    walls
+    {
+        type            nutkWallFunction;
+        value           uniform 0.0001;
+    }
+
+    partition
+    {
+        type            nutkWallFunction;
+        value           uniform 0.0001;
+    }
+}

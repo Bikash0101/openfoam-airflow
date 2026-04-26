@@ -1,0 +1,46 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      p;
+}
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    floor
+    {
+        type            zeroGradient;
+    }
+
+    ceiling
+    {
+        type            zeroGradient;
+    }
+
+    walls
+    {
+        type            zeroGradient;
+    }
+
+    partition
+    {
+        type            zeroGradient;
+    }
+
+    fan_inlet
+    {
+        type            fixedValue;
+        value           uniform 0;      // Reference pressure at fan inlet
+    }
+
+    fan_outlet
+    {
+        type            fixedValue;
+        value           uniform 20;     // 20 Pa pressure rise across fan
+    }
+}
