@@ -1,0 +1,164 @@
+FoamFile
+{
+    version 2.0;
+    format ascii;
+    class dictionary;
+    object topoSetDict;
+}
+
+// Create PARTIAL partition walls with openings
+// Walls have gaps to allow airflow between cubicles
+
+actions
+(
+    // PARTITION 1: Vertical wall at x=2.945 (separates A-B and C-D)
+    // Three segments with openings between them
+    
+    // Segment 1: y from 0 to 1.0m (lower section)
+    {
+        name partitionFaceSet;
+        type faceSet;
+        action new;
+
+        source boxToFace;
+        sourceInfo
+        {
+            box (2.935 0 0) (2.955 1.0 1.54);
+        }
+    }
+
+    // Segment 2: y from 1.2 to 3.0m (middle section)
+    {
+        name partitionFaceSet;
+        type faceSet;
+        action add;
+
+        source boxToFace;
+        sourceInfo
+        {
+            box (2.935 1.2 0) (2.955 3.0 1.54);
+        }
+    }
+
+    // Segment 3: y from 3.2 to 4.37m (upper section)
+    {
+        name partitionFaceSet;
+        type faceSet;
+        action add;
+
+        source boxToFace;
+        sourceInfo
+        {
+            box (2.935 3.2 0) (2.955 4.37 1.54);
+        }
+    }
+
+    // PARTITION 2: Horizontal wall at y=2.185 (separates A-C and B-D)
+    // Three segments with openings between them
+    
+    // Segment 1: x from 0 to 1.5m (left section)
+    {
+        name partitionFaceSet;
+        type faceSet;
+        action add;
+
+        source boxToFace;
+        sourceInfo
+        {
+            box (0 2.175 0) (1.5 2.195 1.54);
+        }
+    }
+
+    // Segment 2: x from 1.7 to 4.2m (middle section)
+    {
+        name partitionFaceSet;
+        type faceSet;
+        action add;
+
+        source boxToFace;
+        sourceInfo
+        {
+            box (1.7 2.175 0) (4.2 2.195 1.54);
+        }
+    }
+
+    // Segment 3: x from 4.4 to 5.89m (right section)
+    {
+        name partitionFaceSet;
+        type faceSet;
+        action add;
+
+        source boxToFace;
+        sourceInfo
+        {
+            box (4.4 2.175 0) (5.89 2.195 1.54);
+        }
+    }
+
+    // Remove floor and ceiling faces (keep only vertical wall sections)
+    {
+        name partitionFaceSet;
+        type faceSet;
+        action delete;
+
+        source boxToFace;
+        sourceInfo
+        {
+            box (-0.1 -0.1 -0.1) (6 4.5 0.1);
+        }
+    }
+
+    {
+        name partitionFaceSet;
+        type faceSet;
+        action delete;
+
+        source boxToFace;
+        sourceInfo
+        {
+            box (-0.1 -0.1 1.5) (6 4.5 1.6);
+        }
+    }
+
+    // Convert faceSet to faceZoneSet
+    {
+        name partitionZone;
+        type faceZoneSet;
+        action new;
+
+        source setToFaceZone;
+        sourceInfo
+        {
+            faceSet partitionFaceSet;
+        }
+    }
+
+    // FAN PLANE: Create thin internal surface (faceZone) in cubicle A
+    // Thin vertical slab where fan sits - converts to baffle
+    {
+        name fanFaceSet;
+        type faceSet;
+        action new;
+
+        source boxToFace;
+        sourceInfo
+        {
+            // Thin slab: x from 0.95 to 1.05 (0.1m thickness ~ 2 cell sizes)
+            // Spans cubicle A interior, mid-height
+            box (0.95 0.2 0.7) (1.05 1.5 1.1);
+        }
+    }
+
+    // Convert faceSet to faceZone
+    {
+        name fanZone;
+        type faceZoneSet;
+        action new;
+
+        source setToFaceZone;
+        sourceInfo
+        {
+            faceSet fanFaceSet;
+        }
+    }
+);

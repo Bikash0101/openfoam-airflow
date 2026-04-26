@@ -1,0 +1,53 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      createBafflesDict;
+}
+
+// Create baffles (internal walls) from partition faceZone
+
+invert false;
+internalFacesOnly true;
+
+fields false;
+
+baffles
+{
+    partition
+    {
+        type        faceZone;
+        zoneName    partitionZone;
+        
+        owner
+        {
+            name            partition;
+            type            wall;
+        }
+        
+        neighbour
+        {
+            name            partition;
+            type            wall;
+        }
+    }
+
+    fan
+    {
+        type        faceZone;
+        zoneName    fanZone;
+
+        owner
+        {
+            name fan_inlet;
+            type patch;
+        }
+
+        neighbour
+        {
+            name fan_outlet;
+            type patch;
+        }
+    }
+};

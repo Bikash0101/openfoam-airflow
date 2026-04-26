@@ -1,0 +1,37 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+
+// Ensure you are using the transient version of the solver
+application     foamRun;
+solver          incompressibleFluid;
+simulationType  transient; // Mandatory for startup behavior
+
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         30;        // Total seconds to simulate
+
+// Time step: Must be small enough for stability (CFL < 1)
+deltaT          0.5;     
+
+writeControl    adjustableRunTime;
+writeInterval   0.5;       // Save data every 0.5 seconds to see the "flow growing"
+
+purgeWrite      0;
+writeFormat     ascii;
+writePrecision  6;
+writeCompression off;
+timeFormat      general;
+timePrecision   6;
+
+// Useful for debugging startup
+runTimeModifiable yes;
+
+// Allow OpenFOAM to automatically adjust deltaT for speed/stability
+adjustTimeStep  yes;
+maxCo           0.9;       // Keeps the simulation from crashing

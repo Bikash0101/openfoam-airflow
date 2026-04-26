@@ -1,0 +1,15 @@
+# OpenFOAM
+[0-9]*
+processor*
+constant/polyMesh/*
+!constant/polyMesh/blockMeshDict
+
+# Logs
+log.*
+*.log
+
+# ParaView
+*.OpenFOAM
+
+# Misc
+*.swp

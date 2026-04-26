@@ -1,0 +1,10 @@
+FoamFile 
+{ 
+    version 2.0; 
+    format ascii; 
+    class dictionary; 
+    object fvOptions; 
+}
+
+// Fan now implemented as surface baffle with BC patches (fan_inlet, fan_outlet)
+// Volume force removed - using realistic pressure jump / velocity-driven approach
