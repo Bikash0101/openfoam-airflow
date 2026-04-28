@@ -19,8 +19,10 @@ gradSchemes
 divSchemes
 {
     default         none;
-    div(phi,U)      Gauss upwind;           // Momentum convection (upwind for stability)
-    div((nuEff*dev2(T(grad(U))))) Gauss linear;  // Viscous stress tensor
+    div(phi,U)      Gauss upwind;
+    div(phi,k)      Gauss upwind;
+    div(phi,omega)  Gauss upwind;
+    div((nuEff*dev2(T(grad(U))))) Gauss linear;
 }
 
 laplacianSchemes
@@ -37,7 +39,7 @@ snGradSchemes
 {
     default         corrected;
 }
-
+// ADD THIS BLOCK
 wallDist
 {
     method meshWave;

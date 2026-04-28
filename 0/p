@@ -32,20 +32,15 @@ boundaryField
         type            zeroGradient;
     }
 
-    fan
+    fan_inlet
     {
-        type            fan;
-        patchType       cyclic;
-        
-        // Pressure jump across fan disc [Pa]
-        // Parameter f = deltaPressure / (0.5 * rho * U^2)
-        // For nominal 10 Pa jump at U_inlet=2 m/s, rho=1.2 kg/m3:
-        // f = 10 / (0.5 * 1.2 * 4) = 4.17 (dimensionless)
-        // This is a steady pressure rise model; can be table(flowRate)
-        f               uniform 4.17;
-        
-        // v2412 unified solver requires explicit field references
-        phi             phi;            // Surface flux field (volFlux)
-        rho             rho;            // Density field (volScalar)
+        type            fixedValue;
+        value           uniform 0;      // Reference pressure at fan inlet
+    }
+
+    fan_outlet
+    {
+        type            fixedValue;
+        value           uniform 20;     // 20 Pa pressure rise across fan
     }
 }

@@ -133,25 +133,23 @@ actions
         }
     }
 
-    // FAN DISC: Circular fan surface (0.4m diameter, 0.2m radius)
-    // Center: (1.5, 0.9, 0.9), Normal: +X direction (discharge direction)
-    // This defines the fan as a thin disc for pressure jump BC
+    // FAN PLANE: Create thin internal surface (faceZone) in cubicle A
+    // Thin vertical slab where fan sits - converts to baffle
     {
         name fanFaceSet;
         type faceSet;
         action new;
 
-        source searchableSurfaceToFaceZone;
+        source boxToFace;
         sourceInfo
         {
-            surface searchableDisk;
-            origin  (1.5 0.9 0.9);   // Fan center location
-            normal  (1 0 0);          // Normal vector (discharge direction: +X)
-            radius  0.2;              // Fan radius: 0.2m (diameter 0.4m)
+            // Thin slab: x from 0.95 to 1.05 (0.1m thickness ~ 2 cell sizes)
+            // Spans cubicle A interior, mid-height
+            box (1.45 0.7 0.7) (1.55 1.1 1.1);
         }
     }
 
-    // Convert circular faceSet to fanZone for cyclic patch creation
+    // Convert faceSet to faceZone
     {
         name fanZone;
         type faceZoneSet;
