@@ -1,0 +1,266 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║         STAND FAN OFFICE AIRFLOW SIMULATION - QUICK REFERENCE CARD         ║
+║                         OpenFOAM v2412 (dev)                               ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ QUICK START                                                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  $ cd /home/bee17/CFD/airflow
+  $ chmod +x Allrun
+  $ ./Allrun 2>&1 | tee log.simulation
+
+  Expected completion time: 30-60 minutes on standard laptop
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CASE OVERVIEW                                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  DOMAIN:           Closed office with partition walls
+  FAN:              0.4m diameter stand fan at (1.5, 0.9, 0.9)
+  ORIENTATION:      Discharge along +X axis
+  SOLVER:           incompressibleFluid (PIMPLE, transient)
+  PHYSICS:          Velocity (U) and Pressure (p) only
+  DURATION:         10 seconds (transient)
+  TIME STEP:        0.05 seconds
+  TARGET CELLS:     ~20,000 hexahedral mesh cells
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ KEY CONFIGURATION VALUES                                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  System Parameter               Value           Location
+  ─────────────────────────────────────────────────────────────────────────
+  Fan center location            (1.5, 0.9, 0.9)  system/topoSetDict
+  Fan radius                     0.2 m            system/topoSetDict
+  Fan orientation                (1, 0, 0)        system/topoSetDict
+  Pressure rise coefficient      4.17 (uniform)   0/p [fan patch]
+  
+  Time integration method        Euler            system/fvSchemes
+  Momentum discretization        Gauss upwind     system/fvSchemes
+  Pressure solver                GAMG             system/fvSolution
+  Velocity solver                PBiCG            system/fvSolution
+  
+  PIMPLE outer loops             3                system/fvSolution
+  PIMPLE inner loops             2                system/fvSolution
+  
+  Time step                      0.05 s           system/controlDict
+  Courant limit                  0.7              system/controlDict
+  Write interval                 0.1 s            system/controlDict
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ EXECUTION STEPS                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  1. blockMesh
+     → Reads system/blockMeshDict
+     → Generates ~20,000 hex cells
+     → Creates constant/polyMesh/
+
+  2. topoSet
+     → Reads system/topoSetDict
+     → Creates fan faceSet (searchableDisk)
+     → Creates fanZone faceZoneSet
+
+  3. createPatch -overwrite
+     → Reads system/createPatchDict
+     → Converts fanZone → cyclic patch "fan"
+     → Modifies constant/polyMesh/boundary
+
+  4. checkMesh -allTopology
+     → Verifies mesh connectivity
+     → Checks for duplicates and invalid faces
+     → Reports skewness and aspect ratios
+
+  5. foamRun
+     → Runs incompressibleFluid solver
+     → Transient PIMPLE iterations
+     → Writes results every 0.1 s
+     → Samples probes at 1, 1.5, 2.5 m downstream
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ MONITORING DURING SIMULATION                                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  # Terminal 2: Watch solver progress
+  $ tail -f log.simulation
+
+  # Terminal 3: Watch convergence
+  $ tail -f postProcessing/residuals/0/residuals.dat
+
+  # Expected console output (every time step):
+  Time = 0.05
+  PIMPLE: outer loop 1
+    Pressure: ...
+    Velocity U: ...
+  PIMPLE: outer loop 2
+    ...
+  PIMPLE: outer loop 3
+    ...
+
+  # Residuals expected to decay:
+    Time      p_Final      U_Final
+    ────────────────────────────────
+    0.05      1e-2         1e-2
+    0.50      1e-3         1e-3
+    5.00      1e-4         1e-4
+   10.00      1e-4         1e-4
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ POST-PROCESSING                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  # View probe velocities at 5 downstream locations
+  $ cat postProcessing/probes/0/U
+
+  Expected U_x values (m/s) at downstream distances:
+    Location (m)      t=5s    t=10s
+    ─────────────────────────────────
+    2.5 (1m away)     1.8     1.8
+    3.0 (1.5m away)   1.3     1.3
+    4.0 (2.5m away)   0.8     0.8
+
+  # View residuals (convergence)
+  $ gnuplot
+    > set logscale y
+    > plot 'postProcessing/residuals/0/residuals.dat' u 1:2 w l  # p residuals
+    > replot 'postProcessing/residuals/0/residuals.dat' u 1:3 w l # U residuals
+
+  # Visualize in ParaView
+  $ paraFoam -builtin
+
+    Recommended displays:
+    ├─ Scalar field: p (pressure) → color by Δp across fan
+    ├─ Vector field: U (velocity) → arrows show jet direction
+    └─ Derived: U magnitude → iso-surfaces of jet velocity
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ EXPECTED RESULTS                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  ✓ Fan creates ~2 m/s jet along +X axis at t=5s
+  ✓ Jet spreads as it progresses downstream (Gaussian profile)
+  ✓ Pressure jump ~10 Pa visible across fan disc
+  ✓ Suction zone (negative pressure) behind fan
+  ✓ Recirculation zones near walls/partitions
+  ✓ No divergence or unrealistic physics
+  ✓ Residuals decay smoothly to ~1e-4
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ TROUBLESHOOTING                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  PROBLEM: "fan patch not found" error
+  ───────────────────────────────────────
+  → createPatch -overwrite may have failed
+  → Check: grep -n "fan" constant/polyMesh/boundary
+  → If missing: manually run "createPatch -overwrite"
+
+  PROBLEM: Solver diverges/NaN values
+  ────────────────────────────────────
+  → Time step too large or fan pressure jump too high
+  → Reduce: deltaT from 0.05 to 0.01 in controlDict
+  → Or reduce: f from 4.17 to 2.0 in 0/p
+  → Restart and rerun
+
+  PROBLEM: Very slow simulation (>2 hours)
+  ────────────────────────────────────────
+  → Mesh too fine or solver tolerances too strict
+  → Options:
+     1. Increase maxCo from 0.7 to 1.0 (less stable)
+     2. Coarsen mesh away from fan zone
+     3. Increase deltaT to 0.1 s
+     4. Run on fewer time steps (endTime = 5 s)
+
+  PROBLEM: Jet velocity unrealistic (<0.5 m/s)
+  ─────────────────────────────────────────────
+  → Fan pressure coefficient f too low
+  → Increase: f from 4.17 to 6.0 or 8.0
+  → Re-run from latestTime (startFrom latestTime)
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FILE LOCATIONS                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  Input Files:
+    system/
+    ├─ topoSetDict            [Fan geometry: searchableDisk]
+    ├─ createPatchDict        [Convert faceZone to cyclic patch]
+    ├─ blockMeshDict          [Base mesh (unchanged)]
+    ├─ controlDict            [Time stepping + probes]
+    ├─ fvSchemes              [Discretization (U and p only)]
+    └─ fvSolution             [Solvers + PIMPLE algorithm]
+    
+    0/
+    ├─ U                      [Cyclic BC at fan patch]
+    ├─ p                      [Fan pressure jump BC]
+    └─ k, omega, nut          [Not used, kept for reference]
+
+  Output Files (generated):
+    postProcessing/
+    ├─ probes/0/U             [Velocity time series at 5 points]
+    ├─ probes/0/p             [Pressure time series at 5 points]
+    └─ residuals/0/residuals.dat [Convergence history]
+    
+    0, 0.1, 0.2, ... 10 (time directories)
+    └─ p, U fields at each time step
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ADJUSTMENT GUIDE                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  WANT STRONGER FAN?
+  ─────────────────
+  0/p: Change "f uniform 4.17;" → "f uniform 6.0;"
+  (Increases pressure rise from 10 Pa to 15 Pa)
+
+  WANT FASTER SIMULATION?
+  ───────────────────────
+  controlDict: Change "deltaT 0.05;" → "deltaT 0.1;"
+  (Faster but less accurate; may diverge if too large)
+
+  WANT HIGHER ACCURACY?
+  ────────────────────
+  system/fvSolution: Change "tolerance 1e-6" → "tolerance 1e-7"
+  (More iterations, slower but more accurate)
+
+  WANT COARSER MESH?
+  ─────────────────
+  system/blockMeshDict: Reduce cell counts (e.g., 21 20 35 → 15 15 25)
+  Then re-run: blockMesh → topoSet → createPatch → foamRun
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ TYPICAL RUNTIME                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  Operation              Time on Laptop     Notes
+  ─────────────────────────────────────────────────────────────────────────
+  blockMesh              < 1 min           Mesh generation
+  topoSet                < 1 min           Fan disc creation
+  createPatch            < 1 min           Patch conversion
+  checkMesh              < 1 min           Topology verification
+  foamRun (10 seconds)   45-60 min         Main CFD simulation
+  Total                  ~1 hour            Full pipeline
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CITATION & REFERENCES                                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  Based on: roomResidenceTime tutorial (OpenFOAM v2412)
+  Solver:   incompressibleFluid (PIMPLE transient)
+  Fan BC:   type fan; (pressure jump implementation)
+  Adapted:  For 0.4m stand fan in partitioned office space
+
+════════════════════════════════════════════════════════════════════════════════

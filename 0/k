@@ -8,31 +8,43 @@ FoamFile
 
 dimensions      [0 2 -2 0 0 0 0];
 
-internalField   uniform 0.01;
+internalField   uniform 0.0005;
 
 boundaryField
 {
     floor
     {
         type            kqRWallFunction;
-        value           uniform 0.01;
+        value           uniform 0.0005;
     }
 
     ceiling
     {
         type            kqRWallFunction;
-        value           uniform 0.01;
+        value           uniform 0.0005;
     }
 
     walls
     {
         type            kqRWallFunction;
-        value           uniform 0.01;
+        value           uniform 0.0005;
     }
 
     partition
     {
         type            kqRWallFunction;
-        value           uniform 0.01;
+        value           uniform 0.0005;
+    }
+
+    fan_inlet
+    {
+        type            turbulentIntensityKineticEnergyInlet;
+        intensity       0.01;
+        value           uniform 0.0005;
+    }
+
+    fan_outlet
+    {
+        type            zeroGradient;
     }
 }

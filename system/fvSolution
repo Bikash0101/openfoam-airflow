@@ -7,31 +7,24 @@ FoamFile
 }
 
 solvers
-{
-    // The "(p|pFinal)" syntax covers both requirements
-    "(p|pFinal)"
-    {
-        solver          GAMG;
-        tolerance       1e-6;
-        relTol          0.01;
-        smoother        GaussSeidel;
-    }
-
-    // This covers U, k, omega AND their Final versions
-    "(U|k|omega|UFinal|kFinal|omegaFinal)"
-    {
-        solver          smoothSolver;
-        smoother        symGaussSeidel;
-        tolerance       1e-6;
-        relTol          0.1;
-    }
-}
+{\n    // Pressure: Multigrid solver for efficiency\n    p\n    {\n        solver          GAMG;\n        tolerance       1e-6;          // Tight convergence for fan pressure jump\n        relTol          0.01;          // Strict relative tolerance\n        smoother        GaussSeidel;\n        maxIter         100;\n    }\n\n    pFinal\n    {\n        $p;\n        relTol          1e-4;          // Even tighter at final corrector\n    }\n\n    // Velocity: Iterative solver (coupled with pressure via PIMPLE)\n    U\n    {\n        solver          PBiCG;\n        preconditioner  DILU;\n        tolerance       1e-7;\n        relTol          0.01;\n    }\n\n    UFinal\n    {\n        $U;\n        relTol          1e-4;\n    }\n}
 
 
 PIMPLE
 {
-    nOuterCorrectors 2;
+    // Outer loop: allows non-orthogonal iterations for fan pressure jump
+    nOuterCorrectors 3;
+    
+    // Inner loop: pressure-velocity iterations per outer loop
     nCorrectors      2;
-    pRefPoint (0 0 0);
-    pRefValue 0;
+    
+    // Non-orthogonal iterations for corrected schemes
+    nNonOrthogonalCorrectors 1;
+    
+    // Pressure reference point (center of domain)
+    pRefPoint (2.945 2.185 0.77);     // Adjust to your office center
+    pRefValue 0;                       // Reference pressure value
+    
+    // Momentum relaxation: Conservative for transient stability
+    momentumPredictor yes;
 }

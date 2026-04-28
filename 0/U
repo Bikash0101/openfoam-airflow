@@ -8,7 +8,7 @@ FoamFile
 
 dimensions      [0 1 -1 0 0 0 0];
 
-internalField   uniform (0.1 0.2 0.1);
+internalField   uniform (0.1 0 0);
 
 boundaryField
 {
@@ -32,14 +32,8 @@ boundaryField
         type            noSlip;
     }
 
-    fan_inlet
+    fan
     {
-        type            fixedValue;
-        value           uniform (2 1 0);   // 2 m/s airflow in +x direction
-    }
-
-    fan_outlet
-    {
-        type            zeroGradient;
+        type            cyclic;
     }
 }

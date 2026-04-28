@@ -1,0 +1,53 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  v2412
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      createPatchDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Convert faceZones into boundary patches for fan pressure jump BC
+// This creates a cyclic-type patch on the fan disc
+
+pointSync false;
+
+
+patches
+(
+    {
+        name            fan;
+        patchType       cyclic;
+        constructFrom   zone;
+        zone            fanZone;
+
+        patchInfo
+        {
+            type            cyclic;
+            neighbourPatch  fan_neighbor; // Points to the other side
+            transform       translational; // Will be determined by the relative motion of the patches
+            separation      (0 0 0); 
+        }
+    }
+    {
+        name            fan_neighbor;
+        patchType       cyclic;
+        constructFrom   zone;
+        zone            fanZone;
+
+        patchInfo
+        {
+            type            cyclic;
+            neighbourPatch  fan;          // Points back to the first side
+            transform       translational; // Will be determined by the relative motion of the patches
+            separation      (0 0 0); 
+        }
+    }
+);

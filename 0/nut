@@ -8,31 +8,42 @@ FoamFile
 
 dimensions      [0 2 -1 0 0 0 0];
 
-internalField   uniform 0.0001;
+internalField   uniform 1e-05;
 
 boundaryField
 {
     floor
     {
         type            nutkWallFunction;
-        value           uniform 0.0001;
+        value           uniform 1e-05;
     }
 
     ceiling
     {
         type            nutkWallFunction;
-        value           uniform 0.0001;
+        value           uniform 1e-05;
     }
 
     walls
     {
         type            nutkWallFunction;
-        value           uniform 0.0001;
+        value           uniform 1e-05;
     }
 
     partition
     {
         type            nutkWallFunction;
-        value           uniform 0.0001;
+        value           uniform 1e-05;
+    }
+
+    fan_inlet
+    {
+        type            fixedValue;
+        value           uniform 1e-05;
+    }
+
+    fan_outlet
+    {
+        type            zeroGradient;
     }
 }
